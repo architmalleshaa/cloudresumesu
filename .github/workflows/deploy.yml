@@ -1,10 +1,10 @@
-name: Deploy Static Site to S3
+name: Deploy Static Site to S3 (Private)
 
 on:
   push:
     branches:
       - main
- 
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -24,20 +24,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 3: Test S3 connection
+      # Step 3: Test S3 connection (optional)
       - name: Test S3 Connection
         run: |
           echo "Listing files in S3 bucket..."
           aws s3 ls s3://${{ secrets.S3_BUCKET }}/
 
-      # Step 4: Deploy site files to S3
+      # Step 4: Sync files to S3 without ACLs
       - name: Deploy to S3
         run: |
-          echo "Syncing site files to S3..."
-          aws s3 sync ./ s3://${{ secrets.S3_BUCKET }} --delete --acl public-read \
+          echo "Syncing site files to S3 (private bucket)..."
+          aws s3 sync ./ s3://${{ secrets.S3_BUCKET }} --delete \
             --cache-control "max-age=0,no-cache,no-store,must-revalidate"
 
-      # Step 5: Conditional CloudFront invalidation
+      # Step 5: Conditional CloudFront invalidation (optional)
       - name: Invalidate CloudFront Cache
         if: env.CLOUDFRONT_ID != ''
         run: |
