@@ -1,16 +1,45 @@
-name: Test Workflow
+name: Deploy Static Site to S3
 
 on:
   push:
     branches:
-      - main
+      - main  # Trigger on pushes to main
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      # Step 1: Checkout repository
+      - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Print Hello
-        run: echo "Hello from GitHub Actions!"
+      # Step 2: Configure AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 3: Optional test to list S3 bucket contents
+      - name: Test S3 Connection
+        run: |
+          echo "Listing files in S3 bucket..."
+          aws s3 ls s3://${{ secrets.S3_BUCKET }}/
+
+      # Step 4: Sync site files to S3
+      - name: Deploy to S3
+        run: |
+          echo "Syncing site files to S3..."
+          aws s3 sync ./ s3://${{ secrets.S3_BUCKET }} --delete --acl public-read \
+            --cache-control "max-age=0,no-cache,no-store,must-revalidate"
+
+      # Step 5: Optional CloudFront invalidation
+      - name: Invalidate CloudFront Cache
+        if: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        run: |
+          echo "Creating CloudFront invalidation..."
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
