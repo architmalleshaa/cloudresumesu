@@ -1,4 +1,4 @@
-name: Deploy React App to S3 with CloudFront Invalidation
+name: Test S3 Connection
 
 on:
   push:
@@ -6,23 +6,12 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  test-s3:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Build React App
-        run: npm run build
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -31,13 +20,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy to S3
+      - name: List S3 Bucket Contents
         run: |
-          aws s3 sync build/ s3://${{ secrets.S3_BUCKET }} --delete --acl public-read
-          aws s3 cp build/index.html s3://${{ secrets.S3_BUCKET }}/index.html --acl public-read
-
-      - name: Invalidate CloudFront Cache
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+          echo "Listing files in S3 bucket..."
+          aws s3 ls s3://${{ secrets.S3_BUCKET }}/
