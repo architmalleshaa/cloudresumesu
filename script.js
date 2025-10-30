@@ -16,4 +16,8 @@ async function fetchVisitCount() {
   }
 }
 
+// Fetch once on page load
 window.onload = fetchVisitCount;
+
+// Auto-refresh every 5 seconds
+setInterval(fetchVisitCount, 5000);
