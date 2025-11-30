@@ -1,6 +1,6 @@
 async function fetchVisitCount() {
   try {
-    const apiUrl = "https://8i5opez31e.execute-api.us-east-1.amazonaws.com/Lambda_Dynamodb_interface_PROD";
+    const apiUrl = "https://bsv7u1opwc.execute-api.us-east-1.amazonaws.com/Prod";
 
     const response = await fetch(apiUrl);
     if (!response.ok) throw new Error("Network response was not ok");
